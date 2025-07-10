@@ -1,0 +1,10 @@
+class h_sequencer extends uvm_sequencer #(h_xtn);
+
+	`uvm_component_utils(h_sequencer)
+	extern function new(string name = "h_sequencer", uvm_component parent);
+endfunction
+
+//CONSTRUCTOR
+function h_sequencer::new(string name = "h_sequencer", uvm_component parent);
+	super.new(name,parent);
+endfunction

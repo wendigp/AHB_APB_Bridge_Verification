@@ -1,0 +1,72 @@
+class env extends uvm_env;
+	
+	`uvm_component_utils(env)
+
+	//Handle declaration for modules inside environment
+	ahb_agent 	h_agt;
+	apb_agent	p_agt;
+	
+
+	scoreboard 	sb;
+	v_sequencer 	v_seqr;
+	env_config	env_cfg;
+
+	//Methods
+	extern function new(string name = "env", uvm_component parent);
+	extern function void build_phase(uvm_phase phase);
+	extern function void connect_phase(uvm_phase phase);
+	extern function void report_phase(uvm_phase phase);
+endclass
+
+function env::new(string name = "env", uvm_component parent);
+	super.new(name,parent);
+endfunction
+
+function void env::build_phase(uvm_phase phase);
+
+	//super.build_phase(phase);
+
+	if(!uvm_config_db #(env_config)::get(this,"","env_config",env_cfg))
+	`uvm_fatal("ENV","CANNOT GET DATA FROM ENV_CONFIG. HAVE YOU SET IT?")
+	
+	if(env_cfg.has_ahb_agent)
+	begin
+	uvm_config_db #(ahb_config)::set(this,"h_agt*","ahb_config",env_cfg.h_cfg);  //Using UVM's configuration database (config_db) to send configuration data (ahb_config) to the h_agt component
+	h_agt = ahb_agent::type_id::create("h_agt",this);
+	end
+
+	if(env_cfg.has_apb_agent)
+	begin
+	uvm_config_db #(apb_config)::set(this,"p_agt*","apb_config",env_cfg.p_cfg);
+	p_agt = apb_agent::type_id::create("p_agt",this);
+	end
+	
+	if(env_cfg.has_virtual_sequencer)
+	v_seqr = v_sequencer::type_id::create("v_seqr",this);
+
+	if(env_cfg.has_scoreboard)
+	sb = scoreboard::type_id::create("sb",this);
+endfunction
+
+function void env::connect_phase(uvm_phase phase);
+	//super.connect_phase(phase);
+//CONNECTION OF VIRTUAL SEQUENCER WITH ACTUAL H_SEQUENCER AND P_SEQUENCER
+	if(env_cfg.has_virtual_sequencer)
+	begin
+	if(env_cfg.has_ahb_agent)
+	v_seqr.h_seqr = h_agt.seqrh;
+	if(env_cfg.has_apb_agent)
+	v_seqr.p_seqr = p_agt.seqrh;
+	end
+//CONNECTION OF SCOREBOARD WITH AHB_MONITOR AND APB_MONITOR
+	if(env_cfg.has_scoreboard)
+	begin
+	h_agt.monh.monitor_port.connect(sb.fifo_h.analysis_export);
+	p_agt.monh.monitor_port.connect(sb.fifo_p.analysis_export);
+	end
+endfunction
+
+function void env::report_phase(uvm_phase phase);
+	super.report_phase(phase);
+	uvm_top.print_topology;
+endfunction

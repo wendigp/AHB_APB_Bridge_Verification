@@ -1,0 +1,32 @@
+interface apb_if(input bit clk);
+
+	//APB PROPERTIES
+	logic [31:0]	paddr;
+	//logic		pready;
+	logic 		resetn;
+	logic		pwrite;
+	logic [31:0]	prdata;
+	logic [31:0]	pwdata;
+	logic 		penable;
+	logic [3:0]	pselx;
+
+//CLOCKING BLOCK FOR APB
+clocking apb_drv_cb@(posedge clk);
+	default input#1 output#1;
+
+	input prdata;
+	output paddr,pwdata,pselx,penable,pwrite;
+endclocking
+
+clocking apb_mon_cb@(posedge clk);
+	default input#1 output#1;
+
+	input prdata;
+	input paddr,pwdata,pselx,pwrite,penable;
+endclocking
+
+//MODPORTS FOR APB
+modport APB_DRV_MP(clocking apb_drv_cb);
+modport APB_MON_MP(clocking apb_mon_cb);
+
+endinterface

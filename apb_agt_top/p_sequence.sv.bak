@@ -1,0 +1,38 @@
+class p_sequence extends uvm_sequence#(p_xtn);
+
+	`uvm_object_utils(p_sequence)
+
+	extern function new(string name = "p_sequence");
+endclass
+
+//CONSTRUCTOR
+function p_sequence::new(string name = "p_sequence");
+	super.new(name);
+endfunction
+
+
+
+//PRDATA GENERATION
+class apb_seq extends p_sequence;
+
+	`uvm_object_utils(apb_seq)
+
+	extern function new(string name = "apb_seq");
+	extern task body();
+endclass
+
+function apb_seq::new(string name = "apb_seq");
+	super.new(name);
+endfunction
+
+task apb_seq::body();
+	
+	//begin
+	req = p_xtn::type_id::create("req");
+	$display("PRDATA is going to start");
+	start_item(req);
+	req.prdata = $random;
+	$display("PRDATA GENERATED: %h", req.prdata);
+	finish_item(req);
+	//end
+endtask

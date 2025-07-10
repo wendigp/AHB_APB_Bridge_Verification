@@ -1,0 +1,85 @@
+class h_driver extends uvm_driver #(h_xtn);
+	
+	`uvm_component_utils(h_driver)
+
+	virtual ahb_if.AHB_DRV_MP 	vif;
+	ahb_config 			h_cfg;
+
+	extern function new(string name = "h_driver", uvm_component parent);
+	extern function void build_phase(uvm_phase phase);
+	extern function void connect_phase(uvm_phase phase);
+	extern task run_phase(uvm_phase phase);
+	extern task send_to_dut(h_xtn req);
+endclass
+
+//CONSTRUCTOR
+function h_driver::new(string name = "h_driver", uvm_component parent);
+	super.new(name,parent);
+endfunction
+
+//BUILD PHASE
+function void h_driver::build_phase(uvm_phase phase);
+	super.build_phase(phase);
+	
+	if(!uvm_config_db #(ahb_config)::get(this,"","ahb_config",h_cfg))
+	begin
+	`uvm_fatal("AHB DRIVER","CANNOT GET DATA FROM AHB_CONFIG. HAVE YOU SET IT?")
+	end
+endfunction
+
+//CONNECT PHASE
+function void h_driver::connect_phase(uvm_phase phase);
+	//super.connect_phase(phase);
+	vif = h_cfg.vif;
+	if(vif==null)
+	`uvm_fatal("AHB_DRIVER","VIF IS NULL IN AHB DRIVER")
+endfunction
+
+
+//RUN PHASE
+task h_driver::run_phase(uvm_phase phase);
+	@(vif.ahb_drv_cb);
+	vif.ahb_drv_cb.resetn <= 1'b0;
+	@(vif.ahb_drv_cb);
+	vif.ahb_drv_cb.resetn <= 1'b1;
+	wait(vif.ahb_drv_cb.hready_out == 1)
+	//while(vif.ahb_drv_cb.hready_out !== 1'b1)
+	//@(vif.ahb_drv_cb);
+	$display("AHB DRIVING STARTS AT : ", $time);
+
+	forever
+	begin
+	seq_item_port.get_next_item(req);
+	send_to_dut(req);
+	seq_item_port.item_done();
+	end
+endtask
+
+// CUSTOM TASK TO SEND ITEM TO DUT
+task h_driver::send_to_dut(h_xtn req);
+
+	//ADDRESS PHASE
+	wait(vif.ahb_drv_cb.hready_out == 1'b1)
+	//while(vif.ahb_drv_cb.hready_out !== 1'b1)
+	//@(vif.ahb_drv_cb);
+	$display("ADDRESS PHASE STARTS DRIVING : ",$time);
+	vif.ahb_drv_cb.haddr <= req.haddr;
+	vif.ahb_drv_cb.hsize <= req.hsize;
+	vif.ahb_drv_cb.hwrite <= req.hwrite;
+	vif.ahb_drv_cb.hburst <= req.hburst;
+	vif.ahb_drv_cb.htrans <= req.htrans;
+	vif.ahb_drv_cb.hready_in <= 1'b1;
+
+	//DATA PHASE
+	@(vif.ahb_drv_cb);
+	wait(vif.ahb_drv_cb.hready_out == 1'b1)
+	//while(vif.ahb_drv_cb.hready_out !== 1'b1)
+	//@(vif.ahb_drv_cb);
+	$display("DATA PHASE STARTS DRIVING : ",$time);
+	if(req.hwrite)
+	vif.ahb_drv_cb.hwdata <= req.hwdata;
+	else
+	vif.ahb_drv_cb.hwdata <= 0;
+
+	`uvm_info("AHB_DRIVER", $sformatf("Printing from AHB DRIVER \n %s", req.sprint()),UVM_LOW)
+endtask

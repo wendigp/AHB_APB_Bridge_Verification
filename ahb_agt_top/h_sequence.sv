@@ -1,0 +1,280 @@
+class base_seq extends uvm_sequence #(h_xtn);
+
+	`uvm_object_utils(base_seq);
+
+//LOCAL VARIABLES OR PROPERTY
+
+	bit [31:0] Haddr;
+	bit 	   Hwrite;
+	bit [2:0]  Hsize;
+	bit [2:0]  Hburst;
+	bit [9:0]  Hlength;
+
+	extern function new(string name = "base_seq");
+endclass
+
+//CONSTRUCTOR
+function base_seq::new(string name = "base_seq");
+	super.new(name);
+endfunction
+
+
+//TEST CASE 1: SINGLE TRANSFER
+class single_trnsfr_seq extends base_seq;
+
+	`uvm_object_utils(single_trnsfr_seq)
+
+	extern function new(string name = "single_trnsfr_seq");
+	extern task body();
+endclass
+
+//CONSTRUCTOR FOR TC_1
+function single_trnsfr_seq::new(string name = "single_trnsfr_seq");
+	super.new(name);
+endfunction
+
+//SEQ BODY FOR TC_1
+task single_trnsfr_seq::body();
+	//super.body();
+	
+	h_xtn req;
+	//begin
+	req = h_xtn::type_id::create("req");
+	start_item(req);
+	assert(req.randomize() with {htrans == 2'b10;
+					hwrite == 1'b1;});
+	finish_item(req);
+	//end
+endtask
+
+//TEST CASE 2: INCREMENTAL TRANSFER
+class incr_seq extends base_seq;
+
+	`uvm_object_utils(incr_seq)
+
+	extern function new(string name = "incr_seq");
+	extern task body();
+endclass
+
+//CONSTRUCTOR FOR TC_2
+function incr_seq::new(string name = "incr_seq");
+	super.new(name);
+endfunction
+
+//SEQ BODY FOR TC_2
+task incr_seq::body();
+	//super.body();
+	h_xtn req;
+	//begin
+	req = h_xtn::type_id::create("req");
+	start_item(req);
+	assert(req.randomize() with {htrans == 2'b10;
+					hwrite == 1'b1;
+					hburst inside {1,3,5,7};});
+	finish_item(req);
+
+	Haddr = req.haddr;
+	Hsize = req.hsize;
+	Hwrite = req.hwrite;
+	Hlength = req.length;
+	Hburst = req.hburst;
+	//end
+
+	//FOR SEQUENTIAL TRANSACTIONS
+	for(int i = 0 ; i < Hlength; i++)
+	begin
+		start_item(req);
+		assert(req.randomize() with {htrans == 2'b11;
+						hwrite == Hwrite;
+						hsize == Hsize;
+						hburst == Hburst;
+						haddr == Haddr + (3'b001 << hsize);});
+		
+		finish_item(req);
+		Haddr = req.haddr;
+	end
+endtask
+
+
+
+//TEST CASE 3: WRAP-4 TRANSFER
+class wrap_4_seq extends base_seq;
+
+	`uvm_object_utils(wrap_4_seq)
+
+	extern function new(string name = "wrap_4_seq");
+	extern task body();
+endclass
+
+//CONSTRUCTOR FOR TC_3
+function wrap_4_seq::new(string name = "wrap_4_seq");
+	super.new(name);
+endfunction
+
+//SEQ BODY FOR TC_3
+task wrap_4_seq::body();
+	//super.body();
+	h_xtn req;
+	begin
+	req = h_xtn::type_id::create("req");
+	start_item(req);
+	assert(req.randomize() with {htrans == 2'b10;
+					hwrite == 1'b1;});
+	finish_item(req);
+
+	Haddr = req.haddr;
+	Hsize = req.hsize;
+	Hwrite = req.hwrite;
+	Hburst = req.hburst;
+	end
+
+	//FOR SEQUENTIAL TRANSACTIONS
+	for(int i = 0 ; i < 3; i++)
+	begin
+		start_item(req);
+		if(Hsize == 0)
+		assert(req.randomize() with {htrans == 2'b11;
+						hwrite == Hwrite;
+						hsize == Hsize;
+						hburst == Hburst;
+						haddr == {Haddr[31:2], (Haddr[1:0]+ 2'b01)};});
+		if(Hsize == 1)
+		assert(req.randomize() with {htrans == 2'b11;
+						hwrite == Hwrite;
+						hsize == Hsize;
+						hburst == Hburst;
+						haddr == {Haddr[31:3], (Haddr[2:0]+ 2'b10)};});
+
+		if(Hsize == 2)
+		assert(req.randomize() with {htrans == 2'b11;
+						hwrite == Hwrite;
+						hsize == Hsize;
+						hburst == Hburst;
+						haddr == {Haddr[31:4], (Haddr[3:0]+ 3'b100)};});
+
+		finish_item(req);
+		Haddr = req.haddr;
+	end
+endtask
+
+
+//TEST CASE 4: WRAP-8 TRANSFER
+class wrap_8_seq extends base_seq;
+
+	`uvm_object_utils(wrap_8_seq)
+
+	extern function new(string name = "wrap_8_seq");
+	extern task body();
+endclass
+
+//CONSTRUCTOR FOR TC_4
+function wrap_8_seq::new(string name = "wrap_8_seq");
+	super.new(name);
+endfunction
+
+//SEQ BODY FOR TC_4
+task wrap_8_seq::body();
+	//super.body();
+	h_xtn req;
+	begin
+	req = h_xtn::type_id::create("req");
+	start_item(req);
+	assert(req.randomize() with {htrans == 2'b10;
+					hwrite == 1'b1;});
+	finish_item(req);
+
+	Haddr = req.haddr;
+	Hsize = req.hsize;
+	//Hburst = req.hburst;
+	Hwrite = req.hwrite;
+	end
+
+	//FOR SEQUENTIAL TRANSACTIONS
+	for(int i = 0 ; i < 7; i++)
+	begin
+		start_item(req);
+		if(Hsize == 0)
+		assert(req.randomize() with {htrans == 2'b11;
+						hwrite == Hwrite;
+						hsize == Hsize;
+						//hburst == Hburst;
+						haddr == {Haddr[31:3], (Haddr[2:0]+ 2'b01)};});
+		if(Hsize == 1)
+		assert(req.randomize() with {htrans == 2'b11;
+						hwrite == Hwrite;
+						hsize == Hsize;
+						//hburst == Hburst;
+						haddr == {Haddr[31:4], (Haddr[3:0]+ 2'b10)};});
+
+		if(Hsize == 2)
+		assert(req.randomize() with {htrans == 2'b11;
+						hwrite == Hwrite;
+						hsize == Hsize;
+						//hburst == Hburst;
+						haddr == {Haddr[31:5], (Haddr[4:0]+ 3'b100)};});
+
+		finish_item(req);
+		Haddr = req.haddr;
+	end
+endtask
+
+
+//TEST CASE 5: WRAP-16 TRANSFER
+class wrap_16_seq extends base_seq;
+
+	`uvm_object_utils(wrap_16_seq)
+
+	extern function new(string name = "wrap_16_seq");
+	extern task body();
+endclass
+
+//CONSTRUCTOR FOR TC_4
+function wrap_16_seq::new(string name = "wrap_16_seq");
+	super.new(name);
+endfunction
+
+//SEQ BODY FOR TC_3
+task wrap_16_seq::body();
+	//super.body();
+	h_xtn req;
+	begin
+	req = h_xtn::type_id::create("req");
+	start_item(req);
+	assert(req.randomize() with {htrans == 2'b10;
+					hwrite == 1'b1;});
+	finish_item(req);
+
+	Haddr = req.haddr;
+	Hsize = req.hsize;
+	//Hburst = req.hburst;
+	Hwrite = req.hwrite;
+	end
+
+	//FOR SEQUENTIAL TRANSACTIONS
+	for(int i = 0 ; i < 15; i++)
+	begin
+		start_item(req);
+		if(Hsize == 0)
+		assert(req.randomize() with {htrans == 2'b11;
+						hwrite == Hwrite;
+						hsize == Hsize;
+						//hburst == Hburst;
+						haddr == {Haddr[31:4], (Haddr[3:0]+ 2'b01)};});
+		if(Hsize == 1)
+		assert(req.randomize() with {htrans == 2'b11;
+						hwrite == Hwrite;
+						hsize == Hsize;
+						//hburst == Hburst;
+						haddr == {Haddr[31:5], (Haddr[4:0]+ 2'b10)};});
+
+		if(Hsize == 2)
+		assert(req.randomize() with {htrans == 2'b11;
+						hwrite == Hwrite;
+						hsize == Hsize;
+						//hburst == Hburst;
+						haddr == {Haddr[31:6], (Haddr[5:0]+ 3'b100)};});
+
+		finish_item(req);
+		Haddr = req.haddr;
+	end
+endtask

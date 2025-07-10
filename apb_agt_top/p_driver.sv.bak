@@ -1,0 +1,71 @@
+class p_driver extends uvm_driver #(p_xtn);
+
+	`uvm_component_utils(p_driver)
+
+	virtual apb_if.APB_DRV_MP 	vif;
+	apb_config 			p_cfg;
+
+
+	extern function new(string name = "p_driver", uvm_component parent);
+	extern function void build_phase(uvm_phase phase);
+	extern function void connect_phase(uvm_phase phase);
+	extern task run_phase(uvm_phase phase);
+	extern task send_to_dut(p_xtn req);
+endclass
+
+//CONSTRUCTOR
+function p_driver::new(string name = "p_driver", uvm_component parent);
+	super.new(name,parent);
+endfunction
+
+//APB DRIVER BUILD PHASE
+function void p_driver::build_phase(uvm_phase phase);
+	super.build_phase(phase);
+
+	if(!uvm_config_db #(apb_config)::get(this,"","apb_config",p_cfg))
+	begin
+	`uvm_fatal("APB DRIVER","CANNOT GET DATA FROM APB CONFIG. HAVE YOU SET IT?")
+	end
+endfunction
+
+//APB DRIVER CONNECT PHASE
+function void p_driver::connect_phase(uvm_phase phase);
+	//super.connect_phase(phase);
+
+	vif = p_cfg.vif;
+	if(vif == null)
+	`uvm_fatal("APB DRIVER","VIF IS NULL IN APB DRIVER")
+endfunction
+
+
+//APB DRIVER RUN PHASE
+task p_driver::run_phase(uvm_phase phase);
+	//super.run_phase(phase);
+
+	forever					//driver continuously waits for new transactions
+	begin
+	seq_item_port.get_next_item(req); 	//pulls next transaction from sequencer.
+	send_to_dut(req);			//drives the transaction to RTL interface
+	seq_item_port.item_done();		//notifies sequencer that item is done
+	end
+endtask
+
+//APB DRIVER SEND TO DUT
+task p_driver::send_to_dut(p_xtn req);
+	
+	`uvm_info("APB DRIVER",$sformatf("Printing from APB DRIVER  \n %s",req.sprint()),UVM_LOW)
+	
+	//wait(vif.apb_drv_cb.pselx != 0);
+	while(vif.apb_drv_cb.pselx == 0)
+	@(vif.apb_drv_cb);
+	//wait(vif.apb_drv_cb.penable);
+	while(vif.apb_drv_cb.penable !== 1)
+	@(vif.apb_drv_cb)
+	begin
+	if(vif.apb_drv_cb.pwrite == 1)
+		vif.apb_drv_cb.prdata <= req.prdata;
+	end
+	repeat(2)
+	@(vif.apb_drv_cb);
+endtask
+	

@@ -1,0 +1,45 @@
+class apb_agent extends uvm_agent;
+
+	`uvm_component_utils(apb_agent)
+
+	p_monitor 	monh;
+	p_driver	drvh;
+	p_sequencer 	seqrh;
+	apb_config	p_cfg;
+
+	extern function new(string name = "apb_agent", uvm_component parent);
+	extern function void build_phase(uvm_phase phase);
+	extern function void connect_phase(uvm_phase phase);
+endclass
+
+//CONSTRUCTOR
+function apb_agent::new(string name = "apb_agent", uvm_component parent);
+	super.new(name,parent);
+endfunction
+
+//BUILD PHASE
+function void apb_agent::build_phase(uvm_phase phase);
+	super.build_phase(phase);
+
+	if(!uvm_config_db #(apb_config)::get(this,"","apb_config",p_cfg))
+	begin
+	`uvm_fatal("APB_AGENT","CANNOT GET DATA FROM APB_CFG. HAVE YOU SET IT?")
+	end
+
+	monh=p_monitor::type_id::create("monh",this);
+	
+	if(p_cfg.is_active == UVM_ACTIVE)
+	begin
+	drvh=p_driver::type_id::create("drvh",this);
+	seqrh=p_sequencer::type_id::create("seqrh",this);
+	end
+endfunction
+
+//CONNECT PHASE
+function void apb_agent::connect_phase(uvm_phase phase);
+	//super.connect_phase(phase);
+
+	if(p_cfg.is_active == UVM_ACTIVE)
+	drvh.seq_item_port.connect(seqrh.seq_item_export);
+
+endfunction

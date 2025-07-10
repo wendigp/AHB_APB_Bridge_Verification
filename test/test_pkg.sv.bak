@@ -1,0 +1,33 @@
+package test_pkg;
+
+    import uvm_pkg::*;
+    `include "uvm_macros.svh"
+    `include "definitions.v"
+
+    // AHB FILES (Correct order!)
+    `include "h_xtn.sv"
+    `include "ahb-config.sv"
+    `include "h_driver.sv"
+    `include "h_monitor.sv"
+    `include "h_sequence.sv"
+    `include "h_sequencer.sv"
+    `include "ahb_agent.sv"
+
+    // APB FILES (Correct order!)
+    `include "p_xtn.sv"
+    `include "apb-config.sv"
+    `include "p_driver.sv"
+    `include "p_monitor.sv"
+    `include "p_sequence.sv"
+    `include "p_sequencer.sv"
+    `include "apb_agent.sv"
+
+    // TB FILES
+    `include "env_config.sv"
+    `include "virtual_sequencer.sv"
+    `include "virtual_sequence.sv"
+    `include "scoreboard.sv"
+    `include "env.sv"
+    `include "test.sv"
+
+endpackage

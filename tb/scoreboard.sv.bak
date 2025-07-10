@@ -1,0 +1,219 @@
+class scoreboard extends uvm_scoreboard;
+
+	`uvm_component_utils(scoreboard)
+
+//HANDLE DECLARATION OF TLM PORTS
+	uvm_tlm_analysis_fifo #(h_xtn) fifo_h;
+	uvm_tlm_analysis_fifo #(p_xtn) fifo_p;
+
+//HANDLE DECLARATION OF TRANSACTIONS AND ENV CONFIGURATION
+	h_xtn 		h_data;
+	p_xtn		p_data;
+	env_config	env_cfg;
+
+//COVERGROUP FOR FUNCTIONAL COVERAGE
+	covergroup cg1;
+	
+	option.per_instance = 1;
+	HADDR : coverpoint h_data.haddr {
+					bins ADDR1 = {[32'h8000_0000: 32'h8000_03ff]};
+					bins ADDR2 = {[32'h8400_0000: 32'h8400_03ff]};
+					bins ADDR3 = {[32'h8800_0000: 32'h8800_03ff]};
+					bins ADDR4 = {[32'h8c00_0000: 32'h8c00_03ff]};
+					}
+
+	HWRITE : coverpoint h_data.hwrite {
+					bins WR = {1};
+					bins RD = {0};
+					}
+
+	HSIZE : coverpoint h_data.hsize {
+					bins BYTE_SIZE 		= {0};
+					bins HALF_WORD_SIZE	= {1};
+					bins WORD_SIZE		= {2};
+					}
+
+	HTRANS : coverpoint h_data.htrans {
+					bins NSEQ = {2};
+					bins SEQ  = {3};
+					}
+
+	HBURST : coverpoint h_data.hburst {
+					bins TRANS_TYPE_0 = {0};
+					bins TRANS_TYPE_1 = {1};
+					bins TRANS_TYPE_2 = {2};
+					bins TRANS_TYPE_3 = {3};
+					bins TRANS_TYPE_4 = {4};
+					bins TRANS_TYPE_5 = {5};
+					bins TRANS_TYPE_6 = {6};
+					bins TRANS_TYPE_7 = {7};
+					}
+	CROSS : cross HADDR,HWRITE,HSIZE,HTRANS,HBURST;
+	endgroup
+
+//COVERGROUP FOR APB FUNCTIONAL COVERAGE
+	covergroup cg2;
+	
+	PADDR : coverpoint p_data.paddr {
+					bins ADDR1 = {[32'h8000_0000: 32'h8000_03ff]};
+					bins ADDR2 = {[32'h8400_0000: 32'h8400_03ff]};
+					bins ADDR3 = {[32'h8800_0000: 32'h8800_03ff]};
+					bins ADDR4 = {[32'h8c00_0000: 32'h8c00_03ff]};
+					}
+	PSELX : coverpoint p_data.pselx {
+					bins SEL_1 = {1};
+					bins SEL_2 = {2};
+					bins SEL_3 = {4};
+					bins SEL_4 = {8};
+					}
+
+	PWRITE : coverpoint p_data.pwrite {
+					bins P_WR = {1};
+					bins P_RD = {0};
+					}
+	endgroup
+
+
+	extern function new(string name = "scoreboard", uvm_component parent);
+	extern function void build_phase(uvm_phase phase);
+	extern task run_phase(uvm_phase phase);
+	extern task compare(int haddr,paddr,hwdata,pwdata);
+	extern task check_data(h_xtn h_data, p_xtn p_data);
+endclass
+
+//CONSTRUCTOR
+function scoreboard::new(string name = "scoreboard", uvm_component parent);
+	super.new(name,parent);
+
+//OBJECT CREATION FOR TLM PORTS IN SCOREBOARD
+	fifo_h = new("fifo_h",this);
+	fifo_p = new("fifo_p",this);
+
+//OBJECT CREATION FOR COVERGROUP IN SCOREBOARD
+	cg1 = new;
+	cg2 = new;
+endfunction
+
+//SCOREBOARD BUILD PHASE
+function void scoreboard::build_phase(uvm_phase phase);
+	super.build_phase(phase);
+endfunction
+
+//SCOREBOARD RUN PHASE
+task scoreboard::run_phase(uvm_phase phase);
+	super.run_phase(phase);
+	
+	forever
+	begin
+		fork
+		begin
+		fifo_h.get(h_data);
+		`uvm_info("AHB SCOREBOARD",$sformatf("Printing from AHB SCOREBOARD \n %s",h_data.sprint()),UVM_LOW)
+		cg1.sample();
+		end
+$display ("SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS");
+		begin 
+		fifo_p.get(p_data);
+		`uvm_info("APB SCOREBOARD",$sformatf("Printing from APB SCOREBOARD \n %s",p_data.sprint()),UVM_LOW)
+		cg2.sample();
+		end
+		join
+		check_data(h_data,p_data);
+	end
+endtask
+
+//COMPARE 
+task scoreboard::compare(int haddr,paddr,hwdata,pwdata);
+	
+//ADDRESS COMPARISON
+	if(haddr == paddr)
+	$display("ADDRESS COMPARED SUCCESSFULLY");
+	else
+	begin
+	$display("ADDRESS COMPARISON UNSUCCESSFUL");
+	$display("HADDR : %h \n PADDR : %h",haddr,paddr);
+	end
+
+//WRITE DATA COMPARISON
+	if(hwdata == pwdata)
+	$display("DATA COMPARED SUCCESSFUL");
+	else
+	begin
+	$display("DATA COMPARISON UNSUCCESSFUL");
+	$display("HWDATA : %h \n PWDATA : %h",hwdata,pwdata);
+	end
+endtask
+
+//Putting Values in task compare using check_data
+task scoreboard::check_data(h_xtn h_data,p_xtn p_data);
+	
+	if(h_data.hwrite)
+	begin
+		if(h_data.hsize == 0)
+		begin
+		if(h_data.haddr[1:0] == 2'b00)
+		compare(h_data.haddr,p_data.paddr,h_data.hwdata[7:0], p_data.pwdata[7:0]);
+
+		if(h_data.haddr[1:0] == 2'b01)
+		compare(h_data.haddr,p_data.paddr,h_data.hwdata[15:8], p_data.pwdata[7:0]);
+		
+		if(h_data.haddr[1:0] == 2'b10)
+		compare(h_data.haddr,p_data.paddr,h_data.hwdata[23:16], p_data.pwdata[7:0]);
+	
+		if(h_data.haddr[1:0] == 2'b11)
+		compare(h_data.haddr,p_data.paddr,h_data.hwdata[31:24], p_data.pwdata[7:0]);
+		end
+
+		
+		if(h_data.hsize == 1)
+		begin
+		if(h_data.haddr[1:0] == 2'b00)
+		compare(h_data.haddr,p_data.paddr,h_data.hwdata[15:0], p_data.pwdata[15:0]);
+
+		if(h_data.haddr[1:0] == 2'b01)
+		compare(h_data.haddr,p_data.paddr,h_data.hwdata[31:16], p_data.pwdata[15:0]);
+		end
+
+		if(h_data.hsize == 2)
+		compare(h_data.haddr,p_data.paddr,h_data.hwdata, p_data.pwdata);
+	end
+
+
+	if(h_data.hwrite == 0)
+	begin
+		if(h_data.hsize == 0)
+		begin
+		if(h_data.haddr[1:0] == 2'b00)
+		compare(h_data.haddr,p_data.paddr,h_data.hrdata[7:0], p_data.prdata[7:0]);
+
+		if(h_data.haddr[1:0] == 2'b01)
+		compare(h_data.haddr,p_data.paddr,h_data.hrdata[7:0], p_data.prdata[15:8]);
+		
+		if(h_data.haddr[1:0] == 2'b10)
+		compare(h_data.haddr,p_data.paddr,h_data.hrdata[7:0], p_data.prdata[23:16]);
+	
+		if(h_data.haddr[1:0] == 2'b11)
+		compare(h_data.haddr,p_data.paddr,h_data.hrdata[7:0], p_data.prdata[31:24]);
+		end
+
+		
+		if(h_data.hsize == 1)
+		begin
+		if(h_data.haddr[1:0] == 2'b00)
+		compare(h_data.haddr,p_data.paddr,h_data.hrdata[15:0], p_data.prdata[15:0]);
+
+		if(h_data.haddr[1:0] == 2'b01)
+		compare(h_data.haddr,p_data.paddr,h_data.hrdata[15:0], p_data.prdata[31:16]);
+		end
+
+		if(h_data.hsize == 2)
+		compare(h_data.haddr,p_data.paddr,h_data.hrdata, p_data.prdata);
+	end
+endtask
+
+
+
+
+		
+
+

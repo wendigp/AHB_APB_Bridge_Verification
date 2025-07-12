@@ -58,7 +58,7 @@ ________________________________________
 
 •	PWDATA shows data being transferred to APB (D-1 to D-4), aligned with APB handshake signals.
 
- ![Descriptive Alt Text](images/write_transfer.png)
+ ![Descriptive Alt Text](images/write_transfer.jpg)
 ________________________________________
 🛠️ Tools Used
 •	Simulator: QuestaSim

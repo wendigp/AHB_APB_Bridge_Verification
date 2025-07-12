@@ -1,137 +1,115 @@
-# =========================================
+# ===========================
 # Simulator and basic setup
-# =========================================
-SIM = Questa
-WORK = work
+# ===========================
+SIMULATOR = Questa
+work = work
 
-# RTL file list
-RTL = ../rtl/ahb_if.sv \
-      ../rtl/apb_if.sv \
-      ../rtl/ahb_slave.v \
-      ../rtl/apb_controller.v \
-      ../rtl/apb_interface.v \
-      ../rtl/ahb_apb_top.v
-
-TB = ../tb/top.sv
+# RTL & TB files
+RTL = ../rtl/* +define+WRAPPING_INCR
+TB  = ../tb/top.sv
 PKG = ../test/test_pkg.sv
+INC = +incdir+../tb +incdir+../test +incdir+../ahb_agt_top +incdir+../apb_agt_top
 
-INC_DIRS = +incdir+../tb +incdir+../test +incdir+../ahb_agt_top +incdir+../apb_agt_top
+VSIMOPT  = -vopt -voptargs=+acc 
+VSIMCOV  = -coverage -sva 
 
-VLOG = /c/questasim64_2021.1/win64/vlog
-VSIM = /c/questasim64_2021.1/win64/vsim
+VSIMBATCH = -c -do "log -r /*; coverage save -onexit mem_cov; run -all; exit"
 
-# =========================================
-# Default target: compile and simulate base_test
-# =========================================
-all: compile simulate
+VLOG = vlog -work $(work) $(RTL) $(INC) $(PKG) $(TB)
 
-compile:
-	$(VLOG) +acc $(INC_DIRS) $(PKG) $(RTL) $(TB)
+# ===========================
+# Targets
+# ===========================
+help:
+	@echo "================================================================="
+	@echo "! USAGE"
+	@echo "! make clean         => clean logs and intermediate files"
+	@echo "! make sv_cmp        => compile RTL & TB"
+	@echo "! make test1         => run single_trnsfr_test"
+	@echo "! make test2         => run incr_test"
+	@echo "! make test3         => run wrap_4_test"
+	@echo "! make test4         => run incr_4_test"
+	@echo "! make test5         => run wrap_8_test"
+	@echo "! make test6         => run incr_8_test"
+	@echo "! make test7         => run wrap_16_test"
+	@echo "! make test8         => run incr_16_test"
+	@echo "! make view_waveX    => view waveform X"
+	@echo "! make report        => merge and generate HTML coverage report"
+	@echo "! make regress       => run all tests and merge coverage"
+	@echo "================================================================="
 
-simulate:
-	$(VSIM) -c -coverage -do "log -r /*; coverage save -onexit; run -all; quit" work.top +UVM_TESTNAME=base_test -wlf wave_base.wlf
-	mv vsim.ucdb cov_base.ucdb
-
-# =========================================
-# Dedicated test targets (with logging signals)
-# =========================================
-test1: compile
-	$(VSIM) -c -coverage -do "log -r /*; coverage save -onexit; run -all; quit" work.top +UVM_TESTNAME=single_trnsfr_test -wlf wave1.wlf
-	mv vsim.ucdb cov_test1.ucdb
-
-test2: compile
-	$(VSIM) -c -coverage -do "log -r /*; coverage save -onexit; run -all; quit" work.top +UVM_TESTNAME=incr_test -wlf wave2.wlf
-	mv vsim.ucdb cov_test2.ucdb
-
-test3: compile
-	$(VSIM) -c -coverage -do "log -r /*; coverage save -onexit; run -all; quit" work.top +UVM_TESTNAME=wrap_4_test -wlf wave3.wlf
-	mv vsim.ucdb cov_test3.ucdb
-
-test4: compile
-	$(VSIM) -c -coverage -do "log -r /*; coverage save -onexit; run -all; quit" work.top +UVM_TESTNAME=wrap_8_test -wlf wave4.wlf
-	mv vsim.ucdb cov_test4.ucdb
-
-test5: compile
-	$(VSIM) -c -coverage -do "log -r /*; coverage save -onexit; run -all; quit" work.top +UVM_TESTNAME=wrap_16_test -wlf wave5.wlf
-	mv vsim.ucdb cov_test5.ucdb
-
-# =========================================
-# View waveform commands
-# =========================================
-view_base:
-	@if [ -f wave_base.wlf ]; then \
-		$(VSIM) -view wave_base.wlf; \
-	else \
-		echo "wave_base.wlf not found. Please run 'make' or 'make simulate' first."; \
-	fi
-
-view1:
-	@if [ -f wave1.wlf ]; then \
-		$(VSIM) -view wave1.wlf; \
-	else \
-		echo "wave1.wlf not found. Please run 'make test1' first."; \
-	fi
-
-view2:
-	@if [ -f wave2.wlf ]; then \
-		$(VSIM) -view wave2.wlf; \
-	else \
-		echo "wave2.wlf not found. Please run 'make test2' first."; \
-	fi
-
-view3:
-	@if [ -f wave3.wlf ]; then \
-		$(VSIM) -view wave3.wlf; \
-	else \
-		echo "wave3.wlf not found. Please run 'make test3' first."; \
-	fi
-
-view4:
-	@if [ -f wave4.wlf ]; then \
-		$(VSIM) -view wave4.wlf; \
-	else \
-		echo "wave4.wlf not found. Please run 'make test4' first."; \
-	fi
-
-view5:
-	@if [ -f wave5.wlf ]; then \
-		$(VSIM) -view wave5.wlf; \
-	else \
-		echo "wave5.wlf not found. Please run 'make test5' first."; \
-	fi
-
-# =========================================
-# Coverage report merge & HTML
-# =========================================
-report:
-	vcover merge merged_cov cov_base.ucdb cov_test1.ucdb cov_test2.ucdb cov_test3.ucdb cov_test4.ucdb cov_test5.ucdb
-	vcover report -details -html merged_cov
-
-cov:
-	"C:\Program Files\Google\Chrome\Application\chrome.exe" merged_cov/index.html &
-
-# =========================================
-# Clean all generated files
-# =========================================
 clean:
-	rm -rf transcript vsim.wlf work *.log *.wlf *.ucdb merged_cov
+	rm -rf transcript* *log* fcover* covhtml* mem_cov* *.wlf modelsim.ini work
 	clear
 
-# =========================================
-# Help message
-# =========================================
-help:
-	@echo "==========================================================="
-	@echo " make                 : compile and simulate base_test"
-	@echo " make compile         : only compile"
-	@echo " make simulate        : simulate base_test (with coverage)"
-	@echo " make test1           : run single_trnsfr_test"
-	@echo " make test2           : run incr_test"
-	@echo " make test3           : run wrap_4_test"
-	@echo " make test4           : run wrap_8_test"
-	@echo " make test5           : run wrap_16_test"
-	@echo " make view1..view5    : view waveforms for each test (auto check exists)"
-	@echo " make report          : merge and generate HTML coverage report"
-	@echo " make cov             : open merged coverage report in Chrome"
-	@echo " make clean           : clean previous builds and files"
-	@echo "==========================================================="
+sv_cmp:
+	vlib $(work)
+	vmap work $(work)
+	$(VLOG)
+
+test1: sv_cmp
+	vsim $(VSIMOPT) $(VSIMCOV) -c -do "log -r /*; coverage save -onexit mem_cov1; run -all; exit" -wlf wave_file1.wlf -l test1.log -sv_seed random work.top +UVM_TESTNAME=single_trnsfr_test
+	vcover report -cvg -details -nocompactcrossbins -codeAll -assert -directive -html mem_cov1
+
+test2: sv_cmp
+	vsim $(VSIMOPT) $(VSIMCOV) -c -do "log -r /*; coverage save -onexit mem_cov2; run -all; exit" -wlf wave_file2.wlf -l test2.log -sv_seed random work.top +UVM_TESTNAME=incr_test
+	vcover report -cvg -details -nocompactcrossbins -codeAll -assert -directive -html mem_cov2
+
+test3: sv_cmp
+	vsim $(VSIMOPT) $(VSIMCOV) -c -do "log -r /*; coverage save -onexit mem_cov3; run -all; exit" -wlf wave_file3.wlf -l test3.log -sv_seed random work.top +UVM_TESTNAME=wrap_4_test
+	vcover report -cvg -details -nocompactcrossbins -codeAll -assert -directive -html mem_cov3
+
+test4: sv_cmp
+	vsim $(VSIMOPT) $(VSIMCOV) -c -do "log -r /*; coverage save -onexit mem_cov4; run -all; exit" -wlf wave_file4.wlf -l test4.log -sv_seed random work.top +UVM_TESTNAME=incr_4_test
+	vcover report -cvg -details -nocompactcrossbins -codeAll -assert -directive -html mem_cov4
+
+test5: sv_cmp
+	vsim $(VSIMOPT) $(VSIMCOV) -c -do "log -r /*; coverage save -onexit mem_cov5; run -all; exit" -wlf wave_file5.wlf -l test5.log -sv_seed random work.top +UVM_TESTNAME=wrap_8_test
+	vcover report -cvg -details -nocompactcrossbins -codeAll -assert -directive -html mem_cov5
+
+test6: sv_cmp
+	vsim $(VSIMOPT) $(VSIMCOV) -c -do "log -r /*; coverage save -onexit mem_cov6; run -all; exit" -wlf wave_file6.wlf -l test6.log -sv_seed random work.top +UVM_TESTNAME=incr_8_test
+	vcover report -cvg -details -nocompactcrossbins -codeAll -assert -directive -html mem_cov6
+
+test7: sv_cmp
+	vsim $(VSIMOPT) $(VSIMCOV) -c -do "log -r /*; coverage save -onexit mem_cov7; run -all; exit" -wlf wave_file7.wlf -l test7.log -sv_seed random work.top +UVM_TESTNAME=wrap_16_test
+	vcover report -cvg -details -nocompactcrossbins -codeAll -assert -directive -html mem_cov7
+
+test8: sv_cmp
+	vsim $(VSIMOPT) $(VSIMCOV) -c -do "log -r /*; coverage save -onexit mem_cov8; run -all; exit" -wlf wave_file8.wlf -l test8.log -sv_seed random work.top +UVM_TESTNAME=incr_16_test
+	vcover report -cvg -details -nocompactcrossbins -codeAll -assert -directive -html mem_cov8
+
+view_wave1:
+	vsim -view wave_file1.wlf
+
+view_wave2:
+	vsim -view wave_file2.wlf
+
+view_wave3:
+	vsim -view wave_file3.wlf
+
+view_wave4:
+	vsim -view wave_file4.wlf
+
+view_wave5:
+	vsim -view wave_file5.wlf
+
+view_wave6:
+	vsim -view wave_file6.wlf
+
+view_wave7:
+	vsim -view wave_file7.wlf
+
+view_wave8:
+	vsim -view wave_file8.wlf
+
+report:
+	vcover merge mem_cov mem_cov1 mem_cov2 mem_cov3 mem_cov4 mem_cov5 mem_cov6 mem_cov7 mem_cov8
+	vcover report -cvg -details -nocompactcrossbins -codeAll -assert -directive -html mem_cov
+
+regress: clean test1 test2 test3 test4 test5 test6 test7 test8 report
+
+
+cov:
+	firefox covhtmlreport/index.html&
+

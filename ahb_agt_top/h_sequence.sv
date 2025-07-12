@@ -10,13 +10,21 @@ class base_seq extends uvm_sequence #(h_xtn);
 	bit [2:0]  Hburst;
 	bit [9:0]  Hlength;
 
+	h_xtn 	   req;
+
 	extern function new(string name = "base_seq");
+	extern task body();
 endclass
 
 //CONSTRUCTOR
 function base_seq::new(string name = "base_seq");
 	super.new(name);
 endfunction
+
+//BODY 
+task base_seq::body();
+	super.body();
+endtask
 
 
 //TEST CASE 1: SINGLE TRANSFER
@@ -35,16 +43,14 @@ endfunction
 
 //SEQ BODY FOR TC_1
 task single_trnsfr_seq::body();
-	//super.body();
-	
-	h_xtn req;
-	//begin
+	super.body();
+	begin	
 	req = h_xtn::type_id::create("req");
 	start_item(req);
 	assert(req.randomize() with {htrans == 2'b10;
-					hwrite == 1'b1;});
+					hburst == 3'd0;});
 	finish_item(req);
-	//end
+	end
 endtask
 
 //TEST CASE 2: INCREMENTAL TRANSFER
@@ -63,13 +69,11 @@ endfunction
 
 //SEQ BODY FOR TC_2
 task incr_seq::body();
-	//super.body();
-	h_xtn req;
-	//begin
+	super.body();
+	begin
 	req = h_xtn::type_id::create("req");
 	start_item(req);
 	assert(req.randomize() with {htrans == 2'b10;
-					hwrite == 1'b1;
 					hburst inside {1,3,5,7};});
 	finish_item(req);
 
@@ -78,7 +82,7 @@ task incr_seq::body();
 	Hwrite = req.hwrite;
 	Hlength = req.length;
 	Hburst = req.hburst;
-	//end
+	end
 
 	//FOR SEQUENTIAL TRANSACTIONS
 	for(int i = 0 ; i < Hlength; i++)
@@ -113,13 +117,12 @@ endfunction
 
 //SEQ BODY FOR TC_3
 task wrap_4_seq::body();
-	//super.body();
-	h_xtn req;
+	super.body();
 	begin
 	req = h_xtn::type_id::create("req");
 	start_item(req);
 	assert(req.randomize() with {htrans == 2'b10;
-					hwrite == 1'b1;});
+					hburst == 3'd2;});
 	finish_item(req);
 
 	Haddr = req.haddr;
@@ -157,8 +160,53 @@ task wrap_4_seq::body();
 	end
 endtask
 
+//TEST CASE 4: INCREMENTAL TRANSFER
+class incr_4_seq extends base_seq;
 
-//TEST CASE 4: WRAP-8 TRANSFER
+	`uvm_object_utils(incr_4_seq)
+
+	extern function new(string name = "incr_4_seq");
+	extern task body();
+endclass
+
+//CONSTRUCTOR FOR TC_4
+function incr_4_seq::new(string name = "incr_4_seq");
+	super.new(name);
+endfunction
+
+//SEQ BODY FOR TC_4
+task incr_4_seq::body();
+	super.body();
+	begin
+	req = h_xtn::type_id::create("req");
+	start_item(req);
+	assert(req.randomize() with {htrans == 2'b10;
+					hburst == 3'd3;});
+	finish_item(req);
+
+	Haddr = req.haddr;
+	Hsize = req.hsize;
+	Hwrite = req.hwrite;
+	Hlength = req.length;
+	Hburst = req.hburst;
+	end
+
+	//FOR SEQUENTIAL TRANSACTIONS
+	for(int i = 0 ; i < 3; i++)
+	begin
+		start_item(req);
+		assert(req.randomize() with {htrans == 2'b11;
+						hwrite == Hwrite;
+						hsize == Hsize;
+						hburst == Hburst;
+						haddr == Haddr + (3'b001 << hsize);});
+		
+		finish_item(req);
+		Haddr = req.haddr;
+	end
+endtask
+
+//TEST CASE 5: WRAP-8 TRANSFER
 class wrap_8_seq extends base_seq;
 
 	`uvm_object_utils(wrap_8_seq)
@@ -167,25 +215,24 @@ class wrap_8_seq extends base_seq;
 	extern task body();
 endclass
 
-//CONSTRUCTOR FOR TC_4
+//CONSTRUCTOR FOR TC_5
 function wrap_8_seq::new(string name = "wrap_8_seq");
 	super.new(name);
 endfunction
 
-//SEQ BODY FOR TC_4
+//SEQ BODY FOR TC_5
 task wrap_8_seq::body();
-	//super.body();
-	h_xtn req;
+	super.body();
 	begin
 	req = h_xtn::type_id::create("req");
 	start_item(req);
 	assert(req.randomize() with {htrans == 2'b10;
-					hwrite == 1'b1;});
+					hburst == 3'd4;});
 	finish_item(req);
 
 	Haddr = req.haddr;
 	Hsize = req.hsize;
-	//Hburst = req.hburst;
+	Hburst = req.hburst;
 	Hwrite = req.hwrite;
 	end
 
@@ -197,20 +244,20 @@ task wrap_8_seq::body();
 		assert(req.randomize() with {htrans == 2'b11;
 						hwrite == Hwrite;
 						hsize == Hsize;
-						//hburst == Hburst;
+						hburst == Hburst;
 						haddr == {Haddr[31:3], (Haddr[2:0]+ 2'b01)};});
 		if(Hsize == 1)
 		assert(req.randomize() with {htrans == 2'b11;
 						hwrite == Hwrite;
 						hsize == Hsize;
-						//hburst == Hburst;
+						hburst == Hburst;
 						haddr == {Haddr[31:4], (Haddr[3:0]+ 2'b10)};});
 
 		if(Hsize == 2)
 		assert(req.randomize() with {htrans == 2'b11;
 						hwrite == Hwrite;
 						hsize == Hsize;
-						//hburst == Hburst;
+						hburst == Hburst;
 						haddr == {Haddr[31:5], (Haddr[4:0]+ 3'b100)};});
 
 		finish_item(req);
@@ -218,8 +265,53 @@ task wrap_8_seq::body();
 	end
 endtask
 
+//TEST CASE 6: INCREMENTAL TRANSFER
+class incr_8_seq extends base_seq;
 
-//TEST CASE 5: WRAP-16 TRANSFER
+	`uvm_object_utils(incr_8_seq)
+
+	extern function new(string name = "incr_8_seq");
+	extern task body();
+endclass
+
+//CONSTRUCTOR FOR TC_6
+function incr_8_seq::new(string name = "incr_8_seq");
+	super.new(name);
+endfunction
+
+//SEQ BODY FOR TC_6
+task incr_8_seq::body();
+	super.body();
+	begin
+	req = h_xtn::type_id::create("req");
+	start_item(req);
+	assert(req.randomize() with {htrans == 2'b10;
+					hburst == 3'd5;});
+	finish_item(req);
+
+	Haddr = req.haddr;
+	Hsize = req.hsize;
+	Hwrite = req.hwrite;
+	Hlength = req.length;
+	Hburst = req.hburst;
+	end
+
+	//FOR SEQUENTIAL TRANSACTIONS
+	for(int i = 0 ; i < 7; i++)
+	begin
+		start_item(req);
+		assert(req.randomize() with {htrans == 2'b11;
+						hwrite == Hwrite;
+						hsize == Hsize;
+						hburst == Hburst;
+						haddr == Haddr + (3'b001 << hsize);});
+		
+		finish_item(req);
+		Haddr = req.haddr;
+	end
+endtask
+
+//TEST CASE 7: WRAP-16 TRANSFER
 class wrap_16_seq extends base_seq;
 
 	`uvm_object_utils(wrap_16_seq)
@@ -228,25 +320,24 @@ class wrap_16_seq extends base_seq;
 	extern task body();
 endclass
 
-//CONSTRUCTOR FOR TC_4
+//CONSTRUCTOR FOR TC_7
 function wrap_16_seq::new(string name = "wrap_16_seq");
 	super.new(name);
 endfunction
 
-//SEQ BODY FOR TC_3
+//SEQ BODY FOR TC_7
 task wrap_16_seq::body();
-	//super.body();
-	h_xtn req;
+	super.body();
 	begin
 	req = h_xtn::type_id::create("req");
 	start_item(req);
 	assert(req.randomize() with {htrans == 2'b10;
-					hwrite == 1'b1;});
+					hburst == 3'd6;});
 	finish_item(req);
 
 	Haddr = req.haddr;
 	Hsize = req.hsize;
-	//Hburst = req.hburst;
+	Hburst = req.hburst;
 	Hwrite = req.hwrite;
 	end
 
@@ -258,22 +349,69 @@ task wrap_16_seq::body();
 		assert(req.randomize() with {htrans == 2'b11;
 						hwrite == Hwrite;
 						hsize == Hsize;
-						//hburst == Hburst;
+						hburst == Hburst;
 						haddr == {Haddr[31:4], (Haddr[3:0]+ 2'b01)};});
 		if(Hsize == 1)
 		assert(req.randomize() with {htrans == 2'b11;
 						hwrite == Hwrite;
 						hsize == Hsize;
-						//hburst == Hburst;
+						hburst == Hburst;
 						haddr == {Haddr[31:5], (Haddr[4:0]+ 2'b10)};});
 
 		if(Hsize == 2)
 		assert(req.randomize() with {htrans == 2'b11;
 						hwrite == Hwrite;
 						hsize == Hsize;
-						//hburst == Hburst;
+						hburst == Hburst;
 						haddr == {Haddr[31:6], (Haddr[5:0]+ 3'b100)};});
 
+		finish_item(req);
+		Haddr = req.haddr;
+	end
+endtask
+
+
+//TEST CASE 8: INCREMENTAL TRANSFER
+class incr_16_seq extends base_seq;
+
+	`uvm_object_utils(incr_16_seq)
+
+	extern function new(string name = "incr_16_seq");
+	extern task body();
+endclass
+
+//CONSTRUCTOR FOR TC_8
+function incr_16_seq :: new(string name = "incr_16_seq");
+	super.new(name);
+endfunction
+
+//SEQ BODY FOR TC_8
+task incr_16_seq::body();
+	super.body();
+	begin
+	req = h_xtn::type_id::create("req");
+	start_item(req);
+	assert(req.randomize() with {htrans == 2'b10;
+					hburst == 3'd7;});
+	finish_item(req);
+
+	Haddr = req.haddr;
+	Hsize = req.hsize;
+	Hwrite = req.hwrite;
+	Hlength = req.length;
+	Hburst = req.hburst;
+	end
+
+	//FOR SEQUENTIAL TRANSACTIONS
+	for(int i = 0 ; i < 15; i++)
+	begin
+		start_item(req);
+		assert(req.randomize() with {htrans == 2'b11;
+						hwrite == Hwrite;
+						hsize == Hsize;
+						hburst == Hburst;
+						haddr == Haddr + (3'b001 << hsize);});
+		
 		finish_item(req);
 		Haddr = req.haddr;
 	end

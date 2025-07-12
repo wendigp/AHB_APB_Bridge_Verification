@@ -23,7 +23,7 @@ endfunction
 //APB MONITOR BUILD PHASE
 
 function void p_monitor::build_phase(uvm_phase phase);
-	//super.build_phase(phase);
+	super.build_phase(phase);
 
 	if(!uvm_config_db #(apb_config)::get(this,"","apb_config",p_cfg))
 	begin
@@ -33,7 +33,7 @@ endfunction
 
 //APB MONITOR CONNECT PHASE
 function void p_monitor::connect_phase(uvm_phase phase);
-	//super.connect_phase (phase);
+	super.connect_phase (phase);
 
 	vif = p_cfg.vif;
 	if(vif==null)
@@ -45,7 +45,7 @@ endfunction
 
 //APB MONITOR RUN PHASE
 task p_monitor::run_phase(uvm_phase phase);
-	//super.run_phase(phase);
+	super.run_phase(phase);
 
 	wait(vif.apb_mon_cb.pselx)
 	forever
@@ -58,7 +58,7 @@ task p_monitor::collect_data();
 	xtn=p_xtn::type_id::create("xtn");
 
 	wait(vif.apb_mon_cb.penable == 1)
-	//while(vif.apb_mon_cb.penable !== 1)
+	//while(vif.apb_mon_cb.penable != 1)
 	//@(vif.apb_mon_cb);
 	xtn.paddr = vif.apb_mon_cb.paddr;
 	xtn.pwrite = vif.apb_mon_cb.pwrite;

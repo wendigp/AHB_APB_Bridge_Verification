@@ -24,7 +24,7 @@ endfunction
 
 function void env::build_phase(uvm_phase phase);
 
-	//super.build_phase(phase);
+	super.build_phase(phase);
 
 	if(!uvm_config_db #(env_config)::get(this,"","env_config",env_cfg))
 	`uvm_fatal("ENV","CANNOT GET DATA FROM ENV_CONFIG. HAVE YOU SET IT?")
@@ -49,7 +49,7 @@ function void env::build_phase(uvm_phase phase);
 endfunction
 
 function void env::connect_phase(uvm_phase phase);
-	//super.connect_phase(phase);
+	super.connect_phase(phase);
 //CONNECTION OF VIRTUAL SEQUENCER WITH ACTUAL H_SEQUENCER AND P_SEQUENCER
 	if(env_cfg.has_virtual_sequencer)
 	begin

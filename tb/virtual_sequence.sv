@@ -11,8 +11,11 @@ class v_base_seq extends uvm_sequence #(uvm_sequence_item);  // It is parameteri
 	single_trnsfr_seq	single_trnsfr;
 	incr_seq		incr;
 	wrap_4_seq		wrap_4;
+	incr_4_seq		incr_4;
 	wrap_8_seq		wrap_8;
+	incr_8_seq		incr_8;
 	wrap_16_seq		wrap_16;
+	incr_16_seq		incr_16;
 
 // HANDLE DECLARATION OF TCs OF APB SIDE
 	apb_seq			apb;
@@ -28,13 +31,11 @@ endfunction
 
 //TASK BODY
 task v_base_seq::body();
-
+	super.body();
 	if(!uvm_config_db #(env_config)::get(null,get_full_name(),"env_config",env_cfg))
 	begin
 	`uvm_fatal("VIRTUAL SEQUENCE","CANNOT GET DATA FROM ENV_CONFIG. HAVE YOU SET IT?")
 	end
-	//else
-	//begin
 	assert($cast(v_seqr,m_sequencer))
 	else
 	begin
@@ -82,12 +83,12 @@ class v_incr_seq extends v_base_seq;
 	extern task body();
 endclass
 
-//CONSTRUCTOR FOR TC_1
+//CONSTRUCTOR FOR TC_2
 function v_incr_seq::new(string name = "v_incr_seq");
 	super.new(name);
 endfunction
 
-//SEQ BODY FOR TC_1
+//SEQ BODY FOR TC_2
 task v_incr_seq::body();
 	super.body();
 
@@ -128,7 +129,34 @@ task v_wrap_4_seq::body();
 	apb.start(p_seqr);
 endtask
 
-//TEST CASE 4: WRAP_8 TRANSFER
+//TEST CASE 4: INCR_4 TRANSFER
+class v_incr_4_seq extends v_base_seq;
+
+	`uvm_object_utils(v_incr_4_seq)
+
+	extern function new(string name = "v_incr_4_seq");
+	extern task body();
+endclass
+
+//CONSTRUCTOR FOR TC_4
+function v_incr_4_seq::new(string name = "v_incr_4_seq");
+	super.new(name);
+endfunction
+
+//SEQ BODY FOR TC_4
+task v_incr_4_seq::body();
+	super.body();
+
+//AHB SEQUENCES
+	incr_4 = incr_4_seq::type_id::create("incr_4");
+	incr_4.start(h_seqr);
+
+//APB SEQUENCES
+	apb = apb_seq::type_id::create("apb");
+	apb.start(p_seqr);
+endtask
+
+//TEST CASE 5: WRAP_8 TRANSFER
 class v_wrap_8_seq extends v_base_seq;
 
 	`uvm_object_utils(v_wrap_8_seq)
@@ -137,12 +165,12 @@ class v_wrap_8_seq extends v_base_seq;
 	extern task body();
 endclass
 
-//CONSTRUCTOR FOR TC_4
+//CONSTRUCTOR FOR TC_5
 function v_wrap_8_seq::new(string name = "v_wrap_8_seq");
 	super.new(name);
 endfunction
 
-//SEQ BODY FOR TC_4
+//SEQ BODY FOR TC_5
 task v_wrap_8_seq::body();
 	super.body();
 
@@ -155,7 +183,35 @@ task v_wrap_8_seq::body();
 	apb.start(p_seqr);
 endtask
 
-//TEST CASE 5: WRAP_16 TRANSFER
+
+//TEST CASE 6: INCR_8 TRANSFER
+class v_incr_8_seq extends v_base_seq;
+
+	`uvm_object_utils(v_incr_8_seq)
+
+	extern function new(string name = "v_incr_8_seq");
+	extern task body();
+endclass
+
+//CONSTRUCTOR FOR TC_6
+function v_incr_8_seq::new(string name = "v_incr_8_seq");
+	super.new(name);
+endfunction
+
+//SEQ BODY FOR TC_6
+task v_incr_8_seq::body();
+	super.body();
+
+//AHB SEQUENCES
+	incr_8 = incr_8_seq::type_id::create("incr_8");
+	incr_8.start(h_seqr);
+
+//APB SEQUENCES
+	apb = apb_seq::type_id::create("apb");
+	apb.start(p_seqr);
+endtask
+
+//TEST CASE 7: WRAP_16 TRANSFER
 class v_wrap_16_seq extends v_base_seq;
 
 	`uvm_object_utils(v_wrap_16_seq)
@@ -164,18 +220,45 @@ class v_wrap_16_seq extends v_base_seq;
 	extern task body();
 endclass
 
-//CONSTRUCTOR FOR TC_5
+//CONSTRUCTOR FOR TC_7
 function v_wrap_16_seq::new(string name = "v_wrap_16_seq");
 	super.new(name);
 endfunction
 
-//SEQ BODY FOR TC_5
+//SEQ BODY FOR TC_7
 task v_wrap_16_seq::body();
 	super.body();
 
 //AHB SEQUENCES
 	wrap_16 = wrap_16_seq::type_id::create("wrap_16");
 	wrap_16.start(h_seqr);
+
+//APB SEQUENCES
+	apb = apb_seq::type_id::create("apb");
+	apb.start(p_seqr);
+endtask
+
+//TEST CASE 8: INCR_16 TRANSFER
+class v_incr_16_seq extends v_base_seq;
+
+	`uvm_object_utils(v_incr_16_seq)
+
+	extern function new(string name = "v_incr_16_seq");
+	extern task body();
+endclass
+
+//CONSTRUCTOR FOR TC_8
+function v_incr_16_seq::new(string name = "v_incr_16_seq");
+	super.new(name);
+endfunction
+
+//SEQ BODY FOR TC_8
+task v_incr_16_seq::body();
+	super.body();
+
+//AHB SEQUENCES
+	incr_16 = incr_16_seq::type_id::create("incr_16");
+	incr_16.start(h_seqr);
 
 //APB SEQUENCES
 	apb = apb_seq::type_id::create("apb");

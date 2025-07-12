@@ -29,7 +29,7 @@ endfunction
 
 //CONNECT PHASE
 function void h_driver::connect_phase(uvm_phase phase);
-	//super.connect_phase(phase);
+	super.connect_phase(phase);
 	vif = h_cfg.vif;
 	if(vif==null)
 	`uvm_fatal("AHB_DRIVER","VIF IS NULL IN AHB DRIVER")
@@ -42,9 +42,9 @@ task h_driver::run_phase(uvm_phase phase);
 	vif.ahb_drv_cb.resetn <= 1'b0;
 	@(vif.ahb_drv_cb);
 	vif.ahb_drv_cb.resetn <= 1'b1;
-	wait(vif.ahb_drv_cb.hready_out == 1)
-	//while(vif.ahb_drv_cb.hready_out !== 1'b1)
-	//@(vif.ahb_drv_cb);
+	//wait(vif.ahb_drv_cb.hready_out == 1)
+	while(vif.ahb_drv_cb.hready_out != 1'b1)
+	@(vif.ahb_drv_cb);
 	$display("AHB DRIVING STARTS AT : ", $time);
 
 	forever
@@ -60,7 +60,7 @@ task h_driver::send_to_dut(h_xtn req);
 
 	//ADDRESS PHASE
 	wait(vif.ahb_drv_cb.hready_out == 1'b1)
-	//while(vif.ahb_drv_cb.hready_out !== 1'b1)
+	//while(vif.ahb_drv_cb.hready_out != 1'b1)
 	//@(vif.ahb_drv_cb);
 	$display("ADDRESS PHASE STARTS DRIVING : ",$time);
 	vif.ahb_drv_cb.haddr <= req.haddr;
@@ -73,7 +73,7 @@ task h_driver::send_to_dut(h_xtn req);
 	//DATA PHASE
 	@(vif.ahb_drv_cb);
 	wait(vif.ahb_drv_cb.hready_out == 1'b1)
-	//while(vif.ahb_drv_cb.hready_out !== 1'b1)
+	//while(vif.ahb_drv_cb.hready_out != 1'b1)
 	//@(vif.ahb_drv_cb);
 	$display("DATA PHASE STARTS DRIVING : ",$time);
 	if(req.hwrite)

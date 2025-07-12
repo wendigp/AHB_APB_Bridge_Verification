@@ -30,7 +30,7 @@ endfunction
 
 //APB DRIVER CONNECT PHASE
 function void p_driver::connect_phase(uvm_phase phase);
-	//super.connect_phase(phase);
+	super.connect_phase(phase);
 
 	vif = p_cfg.vif;
 	if(vif == null)
@@ -40,7 +40,7 @@ endfunction
 
 //APB DRIVER RUN PHASE
 task p_driver::run_phase(uvm_phase phase);
-	//super.run_phase(phase);
+	super.run_phase(phase);
 
 	forever					//driver continuously waits for new transactions
 	begin
@@ -55,11 +55,11 @@ task p_driver::send_to_dut(p_xtn req);
 	
 	`uvm_info("APB DRIVER",$sformatf("Printing from APB DRIVER  \n %s",req.sprint()),UVM_LOW)
 	
-	wait(vif.apb_drv_cb.pselx !== 0);
+	wait(vif.apb_drv_cb.pselx != 0);
 	//while(vif.apb_drv_cb.pselx == 0)
 	//@(vif.apb_drv_cb);
 	wait(vif.apb_drv_cb.penable == 1);
-	//while(vif.apb_drv_cb.penable !== 1)
+	//while(vif.apb_drv_cb.penable != 1)
 	//@(vif.apb_drv_cb)
 	begin
 	if(vif.apb_drv_cb.pwrite == 1)

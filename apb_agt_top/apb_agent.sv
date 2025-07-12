@@ -37,8 +37,9 @@ endfunction
 
 //CONNECT PHASE
 function void apb_agent::connect_phase(uvm_phase phase);
-	//super.connect_phase(phase);
+	super.connect_phase(phase);
 
+//CONNECTING APB DRIVER WITH P_SEQUENCER
 	if(p_cfg.is_active == UVM_ACTIVE)
 	drvh.seq_item_port.connect(seqrh.seq_item_export);
 

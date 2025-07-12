@@ -95,7 +95,7 @@ endfunction
 
 ////RUN PHASE FOR TC_1
 task single_trnsfr_test::run_phase(uvm_phase phase);
-	//super.run_phase(phase);
+	super.run_phase(phase);
 	phase.raise_objection(this);			//RAISE OBJECTION
 	single_testh=v_single_trnsfr_seq::type_id::create("single_testh");
 	single_testh.start(envh.v_seqr);
@@ -126,7 +126,7 @@ endfunction
 
 ////RUN PHASE FOR TC_2
 task incr_test::run_phase(uvm_phase phase);
-	//super.run_phase(phase);
+	super.run_phase(phase);
 	phase.raise_objection(this);			//RAISE OBJECTION
 	incr_testh=v_incr_seq::type_id::create("incr_testh");
 	incr_testh.start(envh.v_seqr);
@@ -158,15 +158,45 @@ endfunction
 
 ////RUN PHASE FOR TC_3
 task wrap_4_test::run_phase(uvm_phase phase);
-	//super.run_phase(phase);
+	super.run_phase(phase);
 	phase.raise_objection(this);			//RAISE OBJECTION
 	wrap_4_testh=v_wrap_4_seq::type_id::create("wrap_4_testh");
 	wrap_4_testh.start(envh.v_seqr);
 	phase.drop_objection(this);			//DROP OBJECTION
 endtask
 
+//TEST CASE 4: INCR_4 TRANSFER
+class incr_4_test extends base_test;
 
-//TEST CASE 4: WRAP_8 TRANSFER
+	`uvm_component_utils(incr_4_test)
+
+	v_incr_4_seq 	incr_4_testh;
+
+	extern function new(string name = "incr_4_test", uvm_component parent);
+	extern function void build_phase(uvm_phase phase);
+	extern task run_phase(uvm_phase phase);
+endclass
+
+////CONSTRUCTOR FOR TC_4
+function incr_4_test::new(string name = "incr_4_test", uvm_component parent);
+	super.new(name,parent);
+endfunction
+
+////BUILD PHASE FOR TC_4
+function void incr_4_test::build_phase(uvm_phase phase);
+	super.build_phase(phase);
+endfunction
+
+////RUN PHASE FOR TC_4
+task incr_4_test::run_phase(uvm_phase phase);
+	super.run_phase(phase);
+	phase.raise_objection(this);			//RAISE OBJECTION
+	incr_4_testh=v_incr_4_seq::type_id::create("incr_4_testh");
+	incr_4_testh.start(envh.v_seqr);
+	phase.drop_objection(this);			//DROP OBJECTION
+endtask
+
+//TEST CASE 5: WRAP_8 TRANSFER
 class wrap_8_test extends base_test;
 
 	`uvm_component_utils(wrap_8_test)
@@ -178,27 +208,57 @@ class wrap_8_test extends base_test;
 	extern task run_phase(uvm_phase phase);
 endclass
 
-////CONSTRUCTOR FOR TC_4
+////CONSTRUCTOR FOR TC_5
 function wrap_8_test::new(string name = "wrap_8_test", uvm_component parent);
 	super.new(name,parent);
 endfunction
 
-////BUILD PHASE FOR TC_4
+////BUILD PHASE FOR TC_5
 function void wrap_8_test::build_phase(uvm_phase phase);
 	super.build_phase(phase);
 endfunction
 
-////RUN PHASE FOR TC_3
+////RUN PHASE FOR TC_5
 task wrap_8_test::run_phase(uvm_phase phase);
-	//super.run_phase(phase);
+	super.run_phase(phase);
 	phase.raise_objection(this);			//RAISE OBJECTION
 	wrap_8_testh=v_wrap_8_seq::type_id::create("wrap_8_testh");
 	wrap_8_testh.start(envh.v_seqr);
 	phase.drop_objection(this);			//DROP OBJECTION
 endtask
 
+//TEST CASE 6: INCR_8 TRANSFER
+class incr_8_test extends base_test;
 
-//TEST CASE 5: WRAP_16 TRANSFER
+	`uvm_component_utils(incr_8_test)
+
+	v_incr_8_seq 	incr_8_testh;
+
+	extern function new(string name = "incr_8_test", uvm_component parent);
+	extern function void build_phase(uvm_phase phase);
+	extern task run_phase(uvm_phase phase);
+endclass
+
+////CONSTRUCTOR FOR TC_6
+function incr_8_test::new(string name = "incr_8_test", uvm_component parent);
+	super.new(name,parent);
+endfunction
+
+////BUILD PHASE FOR TC_6
+function void incr_8_test::build_phase(uvm_phase phase);
+	super.build_phase(phase);
+endfunction
+
+////RUN PHASE FOR TC_6
+task incr_8_test::run_phase(uvm_phase phase);
+	super.run_phase(phase);
+	phase.raise_objection(this);			//RAISE OBJECTION
+	incr_8_testh=v_incr_8_seq::type_id::create("incr_8_testh");
+	incr_8_testh.start(envh.v_seqr);
+	phase.drop_objection(this);			//DROP OBJECTION
+endtask
+
+//TEST CASE 7: WRAP_16 TRANSFER
 class wrap_16_test extends base_test;
 
 	`uvm_component_utils(wrap_16_test)
@@ -210,21 +270,52 @@ class wrap_16_test extends base_test;
 	extern task run_phase(uvm_phase phase);
 endclass
 
-////CONSTRUCTOR FOR TC_3
+////CONSTRUCTOR FOR TC_7
 function wrap_16_test::new(string name = "wrap_16_test", uvm_component parent);
 	super.new(name,parent);
 endfunction
 
-////BUILD PHASE FOR TC_5
+////BUILD PHASE FOR TC_7
 function void wrap_16_test::build_phase(uvm_phase phase);
 	super.build_phase(phase);
 endfunction
 
-////RUN PHASE FOR TC_5
+////RUN PHASE FOR TC_7
 task wrap_16_test::run_phase(uvm_phase phase);
-	//super.run_phase(phase);
+	super.run_phase(phase);
 	phase.raise_objection(this);			//RAISE OBJECTION
 	wrap_16_testh=v_wrap_16_seq::type_id::create("wrap_16_testh");
 	wrap_16_testh.start(envh.v_seqr);
+	phase.drop_objection(this);			//DROP OBJECTION
+endtask
+
+//TEST CASE 8: INCR_16 TRANSFER
+class incr_16_test extends base_test;
+
+	`uvm_component_utils(incr_16_test)
+
+	v_incr_16_seq 	incr_16_testh;
+
+	extern function new(string name = "incr_16_test", uvm_component parent);
+	extern function void build_phase(uvm_phase phase);
+	extern task run_phase(uvm_phase phase);
+endclass
+
+////CONSTRUCTOR FOR TC_8
+function incr_16_test::new(string name = "incr_16_test", uvm_component parent);
+	super.new(name,parent);
+endfunction
+
+////BUILD PHASE FOR TC_8
+function void incr_16_test::build_phase(uvm_phase phase);
+	super.build_phase(phase);
+endfunction
+
+////RUN PHASE FOR TC_8
+task incr_16_test::run_phase(uvm_phase phase);
+	super.run_phase(phase);
+	phase.raise_objection(this);			//RAISE OBJECTION
+	incr_16_testh=v_incr_16_seq::type_id::create("incr_16_testh");
+	incr_16_testh.start(envh.v_seqr);
 	phase.drop_objection(this);			//DROP OBJECTION
 endtask

@@ -48,7 +48,7 @@ class scoreboard extends uvm_scoreboard;
 					bins TRANS_TYPE_6 = {6};
 					bins TRANS_TYPE_7 = {7};
 					}
-	CROSS : cross HADDR,HWRITE,HSIZE,HTRANS,HBURST;
+	CROSS : cross HWRITE,HSIZE,HTRANS,HBURST;
 	endgroup
 
 //COVERGROUP FOR APB FUNCTIONAL COVERAGE
@@ -100,23 +100,26 @@ endfunction
 
 //SCOREBOARD RUN PHASE
 task scoreboard::run_phase(uvm_phase phase);
-	//super.run_phase(phase);
+	super.run_phase(phase);
 	
 	forever
 	begin
 		fork
+//GETTING DATA FOR AHB SCOREBOARD
 		begin
 		fifo_h.get(h_data);
 		`uvm_info("AHB SCOREBOARD",$sformatf("Printing from AHB SCOREBOARD \n %s",h_data.sprint()),UVM_LOW)
 		cg1.sample();
 		end
-$display ("SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS");
+
+//GETTING DATA FOR APB SCOREBOARD
 		begin 
 		fifo_p.get(p_data);
 		`uvm_info("APB SCOREBOARD",$sformatf("Printing from APB SCOREBOARD \n %s",p_data.sprint()),UVM_LOW)
 		cg2.sample();
 		end
 		join
+//COMPARE DATA, AFTER GETTING DATA IN BOTH AHB SCOREBOARD AND APB SCOREBOARD
 		check_data(h_data,p_data);
 	end
 endtask

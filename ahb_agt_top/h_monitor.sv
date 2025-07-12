@@ -59,13 +59,13 @@ task h_monitor::collect_data();
  	h_xtn xtn;
  	xtn = h_xtn::type_id::create("xtn");
 	wait(vif.ahb_mon_cb.hready_out == 1)
-	//while(vif.ahb_mon_cb.hready_out !== 1)
+	//while(vif.ahb_mon_cb.hready_out != 1)
 	//@(vif.ahb_mon_cb);
 
  	$display("AHB MONITOR STARTS COLLECTING DATA AT : ", $time);
 	wait (vif.ahb_mon_cb.htrans == 2 || vif.ahb_mon_cb.htrans == 3);
 	
-	//while(vif.ahb_mon_cb.htrans !==2 && vif.ahb_mon_cb.htrans !== 3)
+	//while(vif.ahb_mon_cb.htrans != 2 && vif.ahb_mon_cb.htrans != 3)
 	//@(vif.ahb_mon_cb);
 
  	xtn.haddr     = vif.ahb_mon_cb.haddr;

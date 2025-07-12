@@ -36,6 +36,7 @@ class h_xtn extends uvm_sequence_item;
 	constraint valid_increment{hsize == 1 -> haddr%2 == 0;
 					hsize == 2 -> haddr%4 == 0;}
 
+
 	extern function new(string name = "h_xtn");
 	extern function void do_print(uvm_printer printer);
 endclass

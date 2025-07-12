@@ -1,0 +1,25 @@
+# Simulation work directories
+work/
+sim/work/
+
+# Waveform files
+*.wlf
+
+# Log and transcript files
+*.log
+transcript
+
+# Swap or backup files (editor temporary files)
+*.swp
+
+# Coverage exempt or temporary data files
+sim/work/@_opt/_data/
+
+# VSIM specific files
+*.qdb
+*.qpg
+*.qtl
+
+# General OS or IDE specific files
+.DS_Store
+Thumbs.db

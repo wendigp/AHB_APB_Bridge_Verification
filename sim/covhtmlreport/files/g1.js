@@ -1,0 +1,2 @@
+var g_data = {"16":{"pr":"/test_pkg","ty":2,"dui":3,"dun":"work.test_pkg","cvgs":[{"h":["\\/test_pkg::scoreboard::cg1 ",2,1,24,17],"cov":[115,8,37.15],"opts":{"goal":"100","per_instance":"true"}},{"h":["/test_pkg/scoreboard/cg1",1,1,17],"cov":[115,8,37.15],"opts":{"goal":"100","merge_instance":"auto(true)"}},{"h":["/test_pkg/scoreboard/cg2",1,1,31],"cov":[10,3,33.33],"opts":{"goal":"100","merge_instance":"auto(true)"}}]}};
+processCovergroupsData(g_data);

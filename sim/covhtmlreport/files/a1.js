@@ -1,0 +1,2 @@
+var g_data = {"16":{"pr":"/test_pkg","ty":2,"dui":3,"dun":"work.test_pkg","asserts":[{"n":["wrap_4_seq/body/#ublk#212492983#121/immed__124"],"h":[0,1]},{"n":["wrap_4_seq/body/#anonblk#212492983#135#4#/#ublk#212492983#136/immed__139"],"h":[0,1]},{"n":["v_base_seq/body/immed__39"],"h":[0,1]}],"ad":0}}
+processAssertionsData(g_data);

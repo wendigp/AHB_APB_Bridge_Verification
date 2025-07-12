@@ -35,7 +35,30 @@ ________________________________________
 📈 Functional Coverage Report
 Achieved 96% functional coverage, confirming thorough design verification.
 ✅ HTML Coverage Report (local view)
- 
+ ![Descriptive Alt Text](images/coverage.png)
+________________________________________
+📈 Write operation
+•	AHB address phase starts with addresses A1, A2, A3, and A4 driven on HADDR.
+
+•	HWRITE signal goes high to indicate write transfer starting from the second HCLK cycle and remains high for the following cycles.
+
+•	HWDATA carries data D-1, D-2, D-3, and D-4 corresponding to each address phase.
+
+•	HREADY indicates when the slave is ready to accept data; wait states may be introduced when low.
+
+•	On APB side, PADDR mirrors the AHB addresses (A1 to A4) after decoding.
+
+•	PWRITE signal stays high to denote a write transfer on APB.
+
+•	PSEL and PENABLE signals control APB transaction phases:
+
+•	PSEL is asserted to select the APB peripheral.
+
+•	PENABLE indicates the data phase on APB.
+
+•	PWDATA shows data being transferred to APB (D-1 to D-4), aligned with APB handshake signals.
+
+ ![Descriptive Alt Text](images/write_transfer.png)
 ________________________________________
 🛠️ Tools Used
 •	Simulator: QuestaSim
